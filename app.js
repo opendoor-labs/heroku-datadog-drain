@@ -158,18 +158,20 @@ function loadAllowedAppsFromEnv () {
   assert(process.env.ALLOWED_APPS, 'Environment variable ALLOWED_APPS required');
   let appNames = process.env.ALLOWED_APPS.split(',');
   let apps = appNames.map(function (name) {
+    let appName = name.toUpperCase().replace(/-/g, '_');
+
     // Password
-    var passwordEnvName = name.toUpperCase() + '_PASSWORD';
+    var passwordEnvName = appName + '_PASSWORD';
     var password = process.env[passwordEnvName];
     assert(password, 'Environment variable ' + passwordEnvName + ' required');
 
     // Tags
-    var tags = process.env[name.toUpperCase() + '_TAGS'];
+    var tags = process.env[appName + '_TAGS'];
     tags = tags === undefined ? [] : tags.split(',');
     tags.push('app:' + name);
 
     // Prefix
-    var prefix = process.env[name.toUpperCase() + '_PREFIX'] || '';
+    var prefix = process.env[appName + '_PREFIX'] || '';
     if (prefix && prefix.slice(-1) !== '.') {
       prefix += '.';
     }
@@ -181,7 +183,7 @@ function loadAllowedAppsFromEnv () {
 }
 
 /**
- * 
+ *
  */
 function extractNumber (string) {
   if (typeof string === 'string') {
@@ -205,4 +207,3 @@ function wrap (fn, wrapper) {
     fn.apply(null, args);
   };
 }
-
