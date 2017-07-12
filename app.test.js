@@ -7,8 +7,8 @@ var sinon = require('sinon');
 
 // Set up environment vars
 process.env['ALLOWED_APPS'] = 'test-app';
-process.env['TEST-APP_PASSWORD'] = 'test-pass';
-process.env['TEST-APP_TAGS'] = 'default:tag';
+process.env['TEST_APP_PASSWORD'] = 'test-pass';
+process.env['TEST_APP_TAGS'] = 'default:tag';
 var app = require('./app');
 
 

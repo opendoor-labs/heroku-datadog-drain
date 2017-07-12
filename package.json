@@ -12,13 +12,12 @@
     "url": "git://github.com/ozinc/heroku-datadog-drain.git"
   },
   "scripts": {
-    "start": "./node_modules/.bin/babel-node app.js",
-    "test": "mocha --compilers js:babel/register app.test.js"
+    "start": "node app.js",
+    "test": "mocha app.test.js"
   },
   "author": "Hrafn Eiriksson <hrafn@oz.com>, Sveinn Fannar Kristjansson <sveinn@oz.com>",
   "license": "ISC",
   "dependencies": {
-    "babel": "^5.0.2",
     "basic-auth": "^1.0.0",
     "express": "^4.12.3",
     "lodash": "^3.6.0",
@@ -30,6 +29,7 @@
     "chai": "^2.2.0",
     "mocha": "^2.2.1",
     "sinon": "^1.14.1",
+    "supertest": "*",
     "supertest-as-promised": "^1.0.0"
   }
 }
