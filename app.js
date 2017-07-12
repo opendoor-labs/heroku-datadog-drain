@@ -1,65 +1,57 @@
 'use strict';
 
-const _ = require('lodash');
-const assert = require('assert');
-const basicAuth = require('basic-auth');
-const express = require('express');
-const logfmt = require('logfmt');
-const throng = require('throng');
-const through = require('through');
-const urlUtil = require('url');
-const StatsD = require('node-statsd');
+let _ = require('lodash');
+let assert = require('assert');
+let logfmt = require('logfmt');
+let express = require('express');
+let through = require('through');
+let urlUtil = require('url');
+let StatsD = require('node-statsd');
+let basicAuth = require('basic-auth');
+let statsd = new StatsD(parseStatsdUrl(process.env.STATSD_URL));
+let app = module.exports = express();
+let allowedApps = loadAllowedAppsFromEnv();
 
-throng({
-  workers: process.env.WEB_CONCURRENCY,
-  lifetime: Infinity
-}, start);
+if (process.env.DEBUG) {
+  console.log('Allowed apps', allowedApps);
+  statsd.send = wrap(statsd.send.bind(statsd), console.log.bind(null, 'Intercepted: statsd.send(%s):'));
+}
 
-function start(id) {
-  let statsd = new StatsD(parseStatsdUrl(process.env.STATSD_URL));
-  let app = module.exports = express();
-  let allowedApps = loadAllowedAppsFromEnv();
+app.use(logfmt.bodyParserStream());
+app.use(function authenticate (req, res, next) {
+  let auth = basicAuth(req) || {};
+  let app = allowedApps[auth.name];
+  if (app !== undefined && app.password === auth.pass) {
+    req.defaultTags = app.tags;
+    req.prefix = app.prefix;
+    next();
+  } else {
+    res.status(401).send('Unauthorized');
+    if (process.env.DEBUG) {
+      console.log('Unauthorized access by %s', auth.name);
+    }
+  }
+});
 
-  if (process.env.DEBUG) {
-    console.log('Allowed apps', allowedApps);
-    statsd.send = wrap(statsd.send.bind(statsd), console.log.bind(null, 'Intercepted: statsd.send(%s):'));
+app.post('/', function (req, res) {
+  if(req.body !== undefined) {
+    req.body.pipe(through(line => processLine(line, req.prefix, req.defaultTags)));
   }
 
-  app.use(logfmt.bodyParserStream());
-  app.use(function authenticate(req, res, next) {
-    let auth = basicAuth(req) || {};
-    let app = allowedApps[auth.name];
-    if (app !== undefined && app.password === auth.pass) {
-      req.defaultTags = app.tags;
-      req.prefix = app.prefix;
-      next();
-    } else {
-      res.status(401).send('Unauthorized');
-      if (process.env.DEBUG) {
-        console.log('Unauthorized access by %s', auth.name);
-      }
-    }
-  });
+  res.send('OK');
+});
 
-  app.post('/', function(req, res) {
-    if(req.body !== undefined) {
-      req.body.pipe(through(line => processLine(line, req.prefix, req.defaultTags)));
-    }
+let port = process.env.PORT || 3000;
+app.listen(port, function () {
+  console.log('Server listening on port ' + port);
+});
 
-    res.send('OK');
-  });
-
-  let port = process.env.PORT || 3000;
-  app.listen(port, function() {
-    console.log(`[worker.${id}] Server listening on port ${port}`);
-  });
-}
 
 /**
  * Matches a line against a rule and processes it
  * @param {object} line
  */
-function processLine(line, prefix, defaultTags) {
+function processLine (line, prefix, defaultTags) {
   // Dyno metrics
   if (hasKeys(line, ['heroku', 'source', 'dyno'])) {
     if (process.env.DEBUG) {
@@ -147,14 +139,14 @@ function parseStatsdUrl(url) {
  * @param {object} tags
  * @return {string[]}
  */
-function tagsToArr(tags) {
+function tagsToArr (tags) {
   return _.transform(tags, (arr, value, key) => arr.push(key + ':' + value), []);
 }
 
 /**
  * Check if object contains list of keys
  */
-function hasKeys(object, keys) {
+function hasKeys (object, keys) {
   return _.every(keys, _.partial(_.has, object));
 }
 
@@ -162,10 +154,10 @@ function hasKeys(object, keys) {
  * Construct allowed apps object from the environment vars containing
  * names, passwords and default tags for apps that may use the drain
  */
-function loadAllowedAppsFromEnv() {
+function loadAllowedAppsFromEnv () {
   assert(process.env.ALLOWED_APPS, 'Environment variable ALLOWED_APPS required');
   let appNames = process.env.ALLOWED_APPS.split(',');
-  let apps = appNames.map(function(name) {
+  let apps = appNames.map(function (name) {
     let appName = name.toUpperCase().replace(/-/g, '_');
 
     // Password
@@ -193,7 +185,7 @@ function loadAllowedAppsFromEnv() {
 /**
  *
  */
-function extractNumber(string) {
+function extractNumber (string) {
   if (typeof string === 'string') {
     var match = string.match(/[\d\.]+/);
     if (match !== null && match.length > 0) {
@@ -209,8 +201,8 @@ function extractNumber(string) {
  * @param {function} wrapper
  * @return {function}
  */
-function wrap(fn, wrapper) {
-  return function(...args) {
+function wrap (fn, wrapper) {
+  return function (...args) {
     wrapper(...args);
     fn.apply(null, args);
   };
