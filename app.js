@@ -8,7 +8,11 @@ const logfmt = require('logfmt');
 const throng = require('throng');
 const through = require('through');
 const urlUtil = require('url');
+
 const StatsD = require('node-statsd');
+const statsd = new StatsD(parseStatsdUrl(process.env.STATSD_URL));
+
+let allowedApps = loadAllowedAppsFromEnv();
 
 throng({
   workers: process.env.WEB_CONCURRENCY,
@@ -16,9 +20,7 @@ throng({
 }, start);
 
 function start(id) {
-  let statsd = new StatsD(parseStatsdUrl(process.env.STATSD_URL));
   let app = module.exports = express();
-  let allowedApps = loadAllowedAppsFromEnv();
 
   if (process.env.DEBUG) {
     console.log('Allowed apps', allowedApps);
