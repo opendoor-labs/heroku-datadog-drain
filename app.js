@@ -72,7 +72,7 @@ function processLine (line, prefix, defaultTags) {
     if (process.env.DEBUG) {
       console.log('Processing router metrics');
     }
-    let tags = tagsToArr(_.pick(line, ['dyno', 'method', 'status', 'host', 'code', 'desc', 'at']));
+    let tags = tagsToArr(_.pick(line, ['dyno', 'path', 'method', 'status', 'host', 'code', 'desc', 'at']));
     tags = _.union(tags, defaultTags);
     statsd.histogram(prefix + 'heroku.router.request.connect', extractNumber(line.connect), tags);
     statsd.histogram(prefix + 'heroku.router.request.service', extractNumber(line.service), tags);
@@ -140,7 +140,19 @@ function parseStatsdUrl(url) {
  * @return {string[]}
  */
 function tagsToArr (tags) {
-  return _.transform(tags, (arr, value, key) => arr.push(key + ':' + value), []);
+  return _.transform(tags, (arr, value, key) => {
+    if (key === 'path') {
+      value = stripIds(value);
+    }
+    arr.push(key + ':' + value);
+  }, []);
+}
+
+/**
+ * Strip unique ids from a path to avoid a huge number of metrics
+ */
+function stripIds(value) {
+  return value.replace(/\/\d+/g, '/:id');
 }
 
 /**
