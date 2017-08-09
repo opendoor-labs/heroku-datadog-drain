@@ -142,17 +142,18 @@ function parseStatsdUrl(url) {
 function tagsToArr (tags) {
   return _.transform(tags, (arr, value, key) => {
     if (key === 'path') {
-      value = stripIds(value);
+      value = stripIdsAndParams(value);
     }
     arr.push(key + ':' + value);
   }, []);
 }
 
 /**
- * Strip unique ids from a path to avoid a huge number of metrics
+ * Strip unique ids and request params from a path to avoid a huge number of metrics
  */
-function stripIds(value) {
-  return value.replace(/\/\d+/g, '/:id');
+function stripIdsAndParams(path) {
+  path = path.replace(/\?.*/, ''); // strip request params
+  return path.replace(/\/\d+/g, '/:id'); // replace ids
 }
 
 /**
