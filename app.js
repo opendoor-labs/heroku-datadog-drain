@@ -152,7 +152,7 @@ function tagsToArr (tags) {
  * Strip unique ids from a path to avoid a huge number of metrics
  */
 function stripIds(value) {
-  return value.replace(/\d+/g, '');
+  return value.replace(/\/\d+/g, '/:id');
 }
 
 /**
