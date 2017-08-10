@@ -153,7 +153,7 @@ function tagsToArr (tags) {
  */
 function stripIdsAndParams(path) {
   path = path.replace(/\?.*/, ''); // strip request params
-  return path.replace(/\/[\w-]*\d+[\w-]*/g, '/_'); // strip alphanumeric ids
+  return path.replace(/\/[\w-]*\d+[\w-]*/g, '/:id'); // strip alphanumeric ids
 }
 
 /**
