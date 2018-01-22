@@ -69,16 +69,20 @@ function processLine (line, prefix, defaultTags) {
 
   // Router metrics
   else if (hasKeys(line, ['heroku', 'router', 'path', 'method', 'dyno', 'status', 'connect', 'service', 'at'])) {
-    if (process.env.DEBUG) {
-      console.log('Processing router metrics');
-    }
-    let tags = tagsToArr(_.pick(line, ['dyno', 'path', 'method', 'status', 'host', 'code', 'desc', 'at']));
-    tags = _.union(tags, defaultTags);
-    statsd.histogram(prefix + 'heroku.router.request.connect', extractNumber(line.connect), tags);
-    statsd.histogram(prefix + 'heroku.router.request.service', extractNumber(line.service), tags);
-    if (line.at === 'error') {
-      statsd.increment(prefix + 'heroku.router.error', 1, tags);
-    }
+    
+    // Note: disabling router metrics until we can figure out how to reduce their cardinality.
+    // As of Jan 22 2018, they're averaging ~20k custom metrics ~= $1000/month of cost.
+    
+    // if (process.env.DEBUG) {
+    //   console.log('Processing router metrics');
+    // }
+    // let tags = tagsToArr(_.pick(line, ['dyno', 'path', 'method', 'status', 'host', 'code', 'desc', 'at']));
+    // tags = _.union(tags, defaultTags);
+    // statsd.histogram(prefix + 'heroku.router.request.connect', extractNumber(line.connect), tags);
+    // statsd.histogram(prefix + 'heroku.router.request.service', extractNumber(line.service), tags);
+    // if (line.at === 'error') {
+    //   statsd.increment(prefix + 'heroku.router.error', 1, tags);
+    // }
   }
 
   // Postgres metrics
