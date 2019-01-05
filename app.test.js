@@ -42,15 +42,15 @@ describe('Heroku Datadog Drain', function () {
     .expect('OK')
     .then(function () {
       expect(StatsD.prototype.histogram.args).to.deep.equal([
-        ['heroku.router.request.connect', 1, ['dyno:web.1', 'path:/users', 'method:POST', 'status:201', 'host:myapp.com', 'at:info', 'default:tag', 'app:test-app']],
-        ['heroku.router.request.service', 37, ['dyno:web.1', 'path:/users', 'method:POST', 'status:201', 'host:myapp.com', 'at:info', 'default:tag', 'app:test-app']],
-        ['heroku.router.request.connect', 1, ['dyno:web.2', 'path:/users/me/tasks', 'method:GET', 'status:200', 'host:myapp.com', 'at:info', 'default:tag', 'app:test-app']],
-        ['heroku.router.request.service', 64, ['dyno:web.2', 'path:/users/me/tasks', 'method:GET', 'status:200', 'host:myapp.com', 'at:info', 'default:tag', 'app:test-app']],
-        ['heroku.router.request.connect', 6, ['dyno:web.1', 'path:/', 'method:GET', 'status:503', 'host:myapp.com', 'code:H12', 'desc:Request timeout', 'at:error', 'default:tag', 'app:test-app']],
-        ['heroku.router.request.service', 30001, ['dyno:web.1', 'path:/', 'method:GET', 'status:503', 'host:myapp.com', 'code:H12', 'desc:Request timeout', 'at:error', 'default:tag', 'app:test-app']],
+        ['heroku.router.request.connect', 1, ['dyno:web.1', 'method:POST', 'status:201', 'path:/users', 'host:myapp.com', 'at:info', 'default:tag', 'app:test-app']],
+        ['heroku.router.request.service', 37, ['dyno:web.1', 'method:POST', 'status:201', 'path:/users', 'host:myapp.com', 'at:info', 'default:tag', 'app:test-app']],
+        ['heroku.router.request.connect', 1, ['dyno:web.2', 'method:GET', 'status:200', 'path:/users/me/tasks', 'host:myapp.com', 'at:info', 'default:tag', 'app:test-app']],
+        ['heroku.router.request.service', 64, ['dyno:web.2', 'method:GET', 'status:200', 'path:/users/me/tasks', 'host:myapp.com', 'at:info', 'default:tag', 'app:test-app']],
+        ['heroku.router.request.connect', 6, ['dyno:web.1', 'method:GET', 'status:503', 'path:/', 'host:myapp.com', 'code:H12', 'desc:Request timeout', 'at:error', 'default:tag', 'app:test-app']],
+        ['heroku.router.request.service', 30001, ['dyno:web.1', 'method:GET', 'status:503', 'path:/', 'host:myapp.com', 'code:H12', 'desc:Request timeout', 'at:error', 'default:tag', 'app:test-app']],
       ]);
       expect(StatsD.prototype.increment.args).to.deep.equal([
-        ['heroku.router.error', 1, ['dyno:web.1', 'path:/', 'method:GET', 'status:503', 'host:myapp.com', 'code:H12', 'desc:Request timeout', 'at:error', 'default:tag', 'app:test-app']],
+        ['heroku.router.error', 1, ['dyno:web.1', 'method:GET', 'status:503', 'path:/', 'host:myapp.com', 'code:H12', 'desc:Request timeout', 'at:error', 'default:tag', 'app:test-app']],
       ]);
     });
   });
@@ -66,15 +66,15 @@ describe('Heroku Datadog Drain', function () {
     .expect('OK')
     .then(function () {
       expect(StatsD.prototype.histogram.args).to.deep.equal([
-        ['heroku.dyno.load.avg.1m', 0.01, ['dyno:web.1', 'dynotype:web', 'default:tag', 'app:test-app']],
-        ['heroku.dyno.load.avg.5m', 0.02, ['dyno:web.1', 'dynotype:web', 'default:tag', 'app:test-app']],
-        ['heroku.dyno.load.avg.15m', 0.03, ['dyno:web.1', 'dynotype:web', 'default:tag', 'app:test-app']],
-        ['heroku.dyno.memory.total', 103.50, ['dyno:web.1', 'dynotype:web', 'default:tag', 'app:test-app']],
-        ['heroku.dyno.memory.rss', 94.70, ['dyno:web.1', 'dynotype:web', 'default:tag', 'app:test-app']],
-        ['heroku.dyno.memory.cache', 0.32, ['dyno:web.1', 'dynotype:web', 'default:tag', 'app:test-app']],
-        ['heroku.dyno.memory.swap', 8.48, ['dyno:web.1', 'dynotype:web', 'default:tag', 'app:test-app']],
-        ['heroku.dyno.memory.pgpgin', 36091, ['dyno:web.1', 'dynotype:web', 'default:tag', 'app:test-app']],
-        ['heroku.dyno.memory.pgpgout', 11765, ['dyno:web.1', 'dynotype:web', 'default:tag', 'app:test-app']]
+        ['heroku.dyno.load.avg.1m', 0.01, ['dyno:web.1', 'default:tag', 'app:test-app']],
+        ['heroku.dyno.load.avg.5m', 0.02, ['dyno:web.1', 'default:tag', 'app:test-app']],
+        ['heroku.dyno.load.avg.15m', 0.03, ['dyno:web.1', 'default:tag', 'app:test-app']],
+        ['heroku.dyno.memory.total', 103.50, ['dyno:web.1', 'default:tag', 'app:test-app']],
+        ['heroku.dyno.memory.rss', 94.70, ['dyno:web.1', 'default:tag', 'app:test-app']],
+        ['heroku.dyno.memory.cache', 0.32, ['dyno:web.1', 'default:tag', 'app:test-app']],
+        ['heroku.dyno.memory.swap', 8.48, ['dyno:web.1', 'default:tag', 'app:test-app']],
+        ['heroku.dyno.memory.pgpgin', 36091, ['dyno:web.1', 'default:tag', 'app:test-app']],
+        ['heroku.dyno.memory.pgpgout', 11765, ['dyno:web.1', 'default:tag', 'app:test-app']]
       ]);
     });
   });
