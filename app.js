@@ -57,8 +57,15 @@ function processLine (line, prefix, defaultTags) {
     if (process.env.DEBUG) {
       console.log('Processing dyno metrics');
     }
-    let tags = tagsToArr({ dyno: line.source });
-    tags = _.union(tags, defaultTags);
+    let tagsDict = {
+      dyno: line.source,
+      dynotype: (line.source || '').split('.')[0]
+    };
+    let defaultTagsDict = _.transform(defaultTags, function(result, tag) {
+      let tagArr = tag.split(':');
+      result[tagArr[0]] = tagArr[1];
+    }, {});
+    let tags = tagsToArr(_.extend(defaultTagsDict, tagsDict));
     let metrics = _.pick(line, (_, key) => key.startsWith('sample#'));
     _.forEach(metrics, function (value, key) {
       key = key.split('#')[1];
