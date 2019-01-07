@@ -61,10 +61,9 @@ function processLine (line, prefix, defaultTags) {
       dyno: line.source,
       dynotype: (line.source || '').split('.')[0]
     };
-    let defaultTagsDict = _.reduce(defaultTags, function(memo, tag) {
+    let defaultTagsDict = _.transform(defaultTags, function(result, tag) {
       let tagArr = tag.split(':');
-      memo[tagArr[0]] = tagArr[1];
-      return memo
+      result[tagArr[0]] = tagArr[1];
     }, {});
     let tags = tagsToArr(_.extend(defaultTagsDict, tagsDict));
     let metrics = _.pick(line, (_, key) => key.startsWith('sample#'));
