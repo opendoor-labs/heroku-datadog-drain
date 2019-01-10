@@ -61,10 +61,7 @@ function processLine (line, prefix, defaultTags) {
       dyno: line.source,
       dynotype: (line.source || '').split('.')[0]
     };
-    let defaultTagsDict = _.transform(defaultTags, function(result, tag) {
-      let tagArr = tag.split(':');
-      result[tagArr[0]] = tagArr[1];
-    }, {});
+    let defaultTagsDict = tagsArrToDict(defaultTags);
     let tags = tagsToArr(_.extend(defaultTagsDict, tagsDict));
     let metrics = _.pick(line, (_, key) => key.startsWith('sample#'));
     _.forEach(metrics, function (value, key) {
@@ -72,6 +69,30 @@ function processLine (line, prefix, defaultTags) {
       key = key.replace(/_/g, '.');
       statsd.histogram(prefix + 'heroku.dyno.' + key, extractNumber(value), tags);
     });
+  }
+
+  // Dyno errors
+  else if (line.host === true && line.heroku === true && line.Error === true) {
+    if (process.env.DEBUG) {
+      console.log('Processing dyno error');
+    }
+    let defaultTagsDict = tagsArrToDict(defaultTags);
+    var customTags = {};
+    _.forEach(line, function(v, k) {
+      if (k.match(/^[HRL]\d+$/) && v === true) {
+        // Add error code
+        customTags['code'] = k;
+      } else if (k.match(/^\w+\.\d+$/) && v === true) {
+        // Add dyno name
+        customTags['dyno'] = k;
+        customTags['dynotype'] = k.split('.')[0];
+      }
+    });
+    // Only emit a metric if it has useful tags
+    if (customTags.code && customTags.dyno) {
+      let tags = tagsToArr(_.extend(defaultTagsDict, customTags));
+      statsd.increment(prefix + 'heroku.dyno.error', 1, tags);
+    }
   }
 
   // Router metrics
@@ -153,6 +174,18 @@ function tagsToArr (tags) {
     }
     arr.push(key + ':' + value);
   }, []);
+}
+
+/**
+ * Transform an array of statsd tags to an object
+ * @param {array} tagsArr
+ * @return {object}
+ */
+function tagsArrToDict (tagsArr) {
+  return _.transform(tagsArr, function(result, tag) {
+    let tagsArgs = tag.split(':');
+    result[tagsArgs[0]] = tagsArgs[1];
+  }, {});
 }
 
 /**
