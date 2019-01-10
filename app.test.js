@@ -79,6 +79,25 @@ describe('Heroku Datadog Drain', function () {
     });
   });
   
+  it('sends dyno error metrics to statsd', function () {
+    return request(app)
+    .post('/')
+    .auth('test-app', 'test-pass')
+    .set('Content-type', 'application/logplex-1')
+    .send(`101 <190>1 2019-01-08T22:54:30.612299+00:00 host heroku web.8 - Error R15 (Memory quota vastly exceeded)\n
+          93 <45>1 2019-01-09T02:19:15.183214+00:00 host heroku web.4 - Error R14 (Memory quota exceeded)\n
+          153 <190>1 2019-01-09T00:49:05.050339+00:00 host heroku web.4 - Error R10 (Boot timeout) -> Web process failed to bind to $PORT within 120 seconds of launch`)
+    .expect(200)
+    .expect('OK')
+    .then(function () {
+      expect(StatsD.prototype.increment.args).to.deep.equal([
+        ['heroku.dyno.error', 1, ['default:tag', 'app:test-app', 'dyno:web.8', 'dynotype:web', 'code:R15']],
+        ['heroku.dyno.error', 1, ['default:tag', 'app:test-app', 'dyno:web.4', 'dynotype:web', 'code:R14']],
+        ['heroku.dyno.error', 1, ['default:tag', 'app:test-app', 'dyno:web.4', 'dynotype:web', 'code:R10']],
+      ]);
+    });
+  });
+
   it('sends PostgreSQL metrics to statsd', function () {
     return request(app)
     .post('/')
