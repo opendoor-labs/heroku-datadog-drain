@@ -82,7 +82,7 @@ function processLine (line, prefix, defaultTags) {
       if (k.match(/^[HRL]\d+$/) && v === true) {
         // Add error code
         customTags['code'] = k;
-      } else if (k.match(/^\w+\.\d+$/) && v === true) {
+      } else if (k.match(/^[a-zA-Z_]+\.\d+$/) && v === true) {
         // Add dyno name
         customTags['dyno'] = k;
         customTags['dynotype'] = k.split('.')[0];
