@@ -88,8 +88,11 @@ function processLine (line, prefix, defaultTags) {
         customTags['dynotype'] = k.split('.')[0];
       }
     });
-    let tags = tagsToArr(_.extend(defaultTagsDict, customTags));
-    statsd.increment(prefix + 'heroku.dyno.error', 1, tags);
+    // Only emit a metric if it has useful tags
+    if (customTags.code && customTags.dyno) {
+      let tags = tagsToArr(_.extend(defaultTagsDict, customTags));
+      statsd.increment(prefix + 'heroku.dyno.error', 1, tags);
+    }
   }
 
   // Router metrics
