@@ -64,7 +64,7 @@ function processLine (line, prefix, defaultTags) {
     };
     let defaultTagsDict = tagsArrToDict(defaultTags);
     let tags = tagsToArr(_.extend(defaultTagsDict, tagsDict));
-    let metrics = _.pick(line, (_, key) => key.startsWith('sample#'));
+    let metrics = _.pickBy(line, (_, key) => key.startsWith('sample#'));
     _.forEach(metrics, function (value, key) {
       key = key.split('#')[1];
       key = key.replace(/_/g, '.');
@@ -117,7 +117,7 @@ function processLine (line, prefix, defaultTags) {
     }
     let tags = tagsToArr({ source: line.source });
     tags = _.union(tags, defaultTags);
-    let metrics = _.pick(line, (_, key) => key.startsWith('sample#'));
+    let metrics = _.pickBy(line, (_, key) => key.startsWith('sample#'));
     _.forEach(metrics, function (value, key) {
       key = key.split('#')[1];
       statsd.histogram(prefix + 'heroku.postgres.' + key, extractNumber(value), tags);
