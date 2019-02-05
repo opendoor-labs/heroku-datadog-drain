@@ -12,7 +12,7 @@
   },
   "scripts": {
     "start": "./node_modules/.bin/babel-node app.js",
-    "test": "mocha --compilers js:babel-core/register app.test.js"
+    "test": "mocha --compilers js:babel-core/register app.test.js --exit"
   },
   "author": "Hrafn Eiriksson <hrafn@oz.com>, Sveinn Fannar Kristjansson <sveinn@oz.com>",
   "license": "ISC",
