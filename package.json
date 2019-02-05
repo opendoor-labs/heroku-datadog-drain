@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "description": "Funnel metrics from multiple Heroku apps into DataDog using statsd",
   "engines": {
-    "node": "6.10.3",
-    "npm": "5.2.0"
+    "node": "10.9"
   },
   "homepage": "https://github.com/ozinc/heroku-datadog-drain",
   "repository": {
@@ -12,24 +11,24 @@
     "url": "git://github.com/ozinc/heroku-datadog-drain.git"
   },
   "scripts": {
-    "start": "node app.js",
-    "test": "mocha app.test.js"
+    "start": "./node_modules/.bin/babel-node app.js",
+    "test": "mocha --compilers js:babel/register app.test.js"
   },
   "author": "Hrafn Eiriksson <hrafn@oz.com>, Sveinn Fannar Kristjansson <sveinn@oz.com>",
   "license": "ISC",
   "dependencies": {
-    "basic-auth": "^1.0.0",
-    "express": "^4.12.3",
-    "lodash": "^3.6.0",
+    "babel-cli": "^6.26.0",
+    "basic-auth": "2.0.0",
+    "express": "4.16.3",
+    "lodash": "4.17.10",
     "logfmt": "^1.2.0",
     "node-statsd": "^0.1.1",
-    "through": "^2.3.6"
+    "through": "^2.3.8"
   },
   "devDependencies": {
-    "chai": "^2.2.0",
-    "mocha": "^2.2.1",
-    "sinon": "^1.14.1",
-    "supertest": "*",
-    "supertest-as-promised": "^1.0.0"
+    "chai": "4.1.2",
+    "mocha": "5.2.0",
+    "sinon": "6.1.5",
+    "supertest-as-promised": "4.0.2"
   }
 }
