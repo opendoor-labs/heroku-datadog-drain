@@ -13,7 +13,7 @@ let app = module.exports = express();
 let allowedApps = loadAllowedAppsFromEnv();
 
 if (process.env.DEBUG) {
-  console.log('Allowed apps', allowedApps);
+  console.log(`Allowed apps: ${Object.keys(allowedApps)}`);
   statsd.send = wrap(statsd.send.bind(statsd), console.log.bind(null, 'Intercepted: statsd.send(%s):'));
 }
 
@@ -35,9 +35,10 @@ app.use(function authenticate (req, res, next) {
 
 app.post('/', function (req, res) {
   if(req.body !== undefined) {
+    // Doing this causes the H18 errors. This is still running when the response is sent below
     req.body.pipe(through(line => processLine(line, req.prefix, req.defaultTags)));
   }
-
+  
   res.send('OK');
 });
 
@@ -63,7 +64,7 @@ function processLine (line, prefix, defaultTags) {
     };
     let defaultTagsDict = tagsArrToDict(defaultTags);
     let tags = tagsToArr(_.extend(defaultTagsDict, tagsDict));
-    let metrics = _.pick(line, (_, key) => key.startsWith('sample#'));
+    let metrics = _.pickBy(line, (_, key) => key.startsWith('sample#'));
     _.forEach(metrics, function (value, key) {
       key = key.split('#')[1];
       key = key.replace(/_/g, '.');
@@ -116,7 +117,7 @@ function processLine (line, prefix, defaultTags) {
     }
     let tags = tagsToArr({ source: line.source });
     tags = _.union(tags, defaultTags);
-    let metrics = _.pick(line, (_, key) => key.startsWith('sample#'));
+    let metrics = _.pickBy(line, (_, key) => key.startsWith('sample#'));
     _.forEach(metrics, function (value, key) {
       key = key.split('#')[1];
       statsd.histogram(prefix + 'heroku.postgres.' + key, extractNumber(value), tags);
@@ -143,6 +144,8 @@ function processLine (line, prefix, defaultTags) {
       console.log('No match for line');
     }
   }
+
+  return;
 }
 
 /**
@@ -210,9 +213,10 @@ function hasKeys (object, keys) {
 function loadAllowedAppsFromEnv () {
   assert(process.env.ALLOWED_APPS, 'Environment variable ALLOWED_APPS required');
   let appNames = process.env.ALLOWED_APPS.split(',');
-  let apps = appNames.map(function (name) {
-    let appName = name.toUpperCase().replace(/-/g, '_');
+  let apps = {};
 
+  appNames.map(function (name) {
+    let appName = name.toUpperCase().replace(/-/g, '_');
     // Password
     var passwordEnvName = appName + '_PASSWORD';
     var password = process.env[passwordEnvName];
@@ -229,10 +233,14 @@ function loadAllowedAppsFromEnv () {
       prefix += '.';
     }
 
-    return [name, { password, tags, prefix }];
+    apps[name.replace(/_/g, '-')] = {
+      password,
+      tags,
+      prefix
+    }
   });
 
-  return _.object(apps);
+  return apps;
 }
 
 /**
